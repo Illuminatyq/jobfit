@@ -1,0 +1,133 @@
+{
+  "version": "1.0.0",
+  "taxonomy_version": "1.0.0",
+  "cases": [
+    {
+      "id": "G-001",
+      "vacancy": "Требования:\nОбязательно: Postman, MySQL, Docker.\nБудет плюсом: Playwright.",
+      "profile": "4.5 года тестирования web и backend.\nAPI-тестирование через Postman, проверка данных в MySQL.",
+      "expected_requirements": [
+        {
+          "skill_id": "docker",
+          "priority": "must"
+        },
+        {
+          "skill_id": "mysql",
+          "priority": "must"
+        },
+        {
+          "skill_id": "playwright",
+          "priority": "nice"
+        },
+        {
+          "skill_id": "postman",
+          "priority": "must"
+        }
+      ],
+      "expected_confirmed": [
+        "mysql",
+        "postman"
+      ]
+    },
+    {
+      "id": "G-002",
+      "vacancy": "Требования:\nТребуется опыт работы с REST API и SQL.\nБудет плюсом: Kubernetes.",
+      "profile": "Тестирую REST API на Python, пишу сложные SQL-запросы к базе данных.",
+      "expected_requirements": [
+        {
+          "skill_id": "kubernetes",
+          "priority": "nice"
+        },
+        {
+          "skill_id": "rest_api",
+          "priority": "must"
+        },
+        {
+          "skill_id": "sql",
+          "priority": "must"
+        }
+      ],
+      "expected_confirmed": [
+        "python",
+        "rest_api",
+        "sql"
+      ]
+    },
+    {
+      "id": "G-003",
+      "vacancy": "Требования:\nНеобходимо работать с GitLab CI и Docker.\nОбязательна Java для бэкенда.",
+      "profile": "Собираю пайплайны в GitLab CI, контейнеризация через Docker.",
+      "expected_requirements": [
+        {
+          "skill_id": "docker",
+          "priority": "must"
+        },
+        {
+          "skill_id": "git",
+          "priority": "must"
+        },
+        {
+          "skill_id": "gitlab_ci",
+          "priority": "must"
+        },
+        {
+          "skill_id": "java",
+          "priority": "must"
+        }
+      ],
+      "expected_confirmed": [
+        "docker",
+        "git",
+        "gitlab_ci"
+      ]
+    },
+    {
+      "id": "G-004",
+      "vacancy": "Навыки:\nОбязательны Python и Selenium, git — контроль версий.",
+      "profile": "Автоматизирую тесты на Python, работаю с Selenium и git.",
+      "expected_requirements": [
+        {
+          "skill_id": "git",
+          "priority": "must"
+        },
+        {
+          "skill_id": "python",
+          "priority": "must"
+        },
+        {
+          "skill_id": "selenium",
+          "priority": "must"
+        }
+      ],
+      "expected_confirmed": [
+        "git",
+        "python",
+        "selenium"
+      ]
+    },
+    {
+      "id": "G-005",
+      "vacancy": "Требования:\nНеобходимы Linux и Charles Proxy для отладки Android-приложений.",
+      "profile": "Пишу SQL-запросы, тестирую GraphQL API через Postman.",
+      "expected_requirements": [
+        {
+          "skill_id": "android",
+          "priority": "must"
+        },
+        {
+          "skill_id": "charles",
+          "priority": "must"
+        },
+        {
+          "skill_id": "linux",
+          "priority": "must"
+        }
+      ],
+      "expected_confirmed": [
+        "graphql",
+        "postman",
+        "sql"
+      ]
+    }
+  ]
+}
