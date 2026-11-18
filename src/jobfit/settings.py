@@ -22,3 +22,5 @@ class Settings(BaseSettings):
     ollama_model: str = ""
 
     database_url: str = "postgresql+psycopg://jobfit:jobfit@localhost:5432/jobfit"
+
+    log_level: str = "WARNING"
