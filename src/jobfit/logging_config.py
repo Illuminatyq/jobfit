@@ -9,13 +9,16 @@ from __future__ import annotations
 
 import logging
 import sys
+from typing import TextIO
 
 _CONFIGURED_FLAG = "_jobfit_configured"
 
 
-def setup_logging(level: int | str = logging.INFO, *, stream: object = None) -> logging.Logger:
-    """Настраивает корневой логгер jobfit. Идемпотентна: повторные вызовы
-    только меняют уровень, дубликаты handler'ов не плодятся."""
+def setup_logging(
+    level: int | str | None = None, *, stream: TextIO | None = None
+) -> logging.Logger:
+    """Настраивает корневой логгер jobfit. Идемпотентна: handler не дублируется,
+    уровень меняется только если передан явно."""
     root = logging.getLogger("jobfit")
     if not getattr(root, _CONFIGURED_FLAG, False):
         handler = logging.StreamHandler(stream or sys.stderr)
@@ -26,9 +29,9 @@ def setup_logging(level: int | str = logging.INFO, *, stream: object = None) -> 
             )
         )
         root.addHandler(handler)
-        root.setLevel(level)
+        root.setLevel(level if level is not None else logging.INFO)
         setattr(root, _CONFIGURED_FLAG, True)
-    else:
+    elif level is not None:
         root.setLevel(level)
     return root
 

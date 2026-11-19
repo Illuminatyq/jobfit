@@ -23,8 +23,12 @@ class Analysis:
 
 
 def analyze(vacancy: str, profile: str, taxonomy: Taxonomy) -> Analysis:
-    log.info("analyze start: vacancy=%d chars, profile=%d chars, taxonomy=%s",
-             len(vacancy), len(profile), taxonomy.version)
+    log.info(
+        "analyze start: vacancy=%d chars, profile=%d chars, taxonomy=%s",
+        len(vacancy),
+        len(profile),
+        taxonomy.version,
+    )
     requirements = extract_requirements(vacancy, taxonomy)
     evidence = extract_evidence(profile, taxonomy)
     confirmed = confirmed_skills(evidence)

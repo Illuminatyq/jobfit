@@ -1,133 +1,109 @@
 {
-  "version": "1.0.0",
-  "taxonomy_version": "1.0.0",
+  "dataset_version": "1.0.0",
   "cases": [
     {
-      "id": "G-001",
-      "vacancy": "Требования:\nОбязательно: Postman, MySQL, Docker.\nБудет плюсом: Playwright.",
-      "profile": "4.5 года тестирования web и backend.\nAPI-тестирование через Postman, проверка данных в MySQL.",
-      "expected_requirements": [
-        {
-          "skill_id": "docker",
-          "priority": "must"
-        },
-        {
-          "skill_id": "mysql",
-          "priority": "must"
-        },
-        {
-          "skill_id": "playwright",
-          "priority": "nice"
-        },
-        {
-          "skill_id": "postman",
-          "priority": "must"
-        }
-      ],
-      "expected_confirmed": [
-        "mysql",
-        "postman"
-      ]
+      "id": "G01",
+      "title": "базовое разделение must и nice",
+      "taxonomy_version": "1.0.0",
+      "vacancy": "Требования:\nОбязательно: Postman, MySQL, Docker.\nБудет плюсом: Playwright, Kubernetes.\nУсловия: гибкий график, ДМС, ноутбук на Linux.\n",
+      "profile": "4.5 года тестирования web и backend.\nAPI-тестирование через Postman, проверка данных в MySQL.\n",
+      "expected_requirements": {"postman": "must", "mysql": "must", "docker": "must", "playwright": "nice", "kubernetes": "nice"},
+      "expected_confirmed": ["mysql", "postman"],
+      "expected_coverage": 55
     },
     {
-      "id": "G-002",
-      "vacancy": "Требования:\nТребуется опыт работы с REST API и SQL.\nБудет плюсом: Kubernetes.",
-      "profile": "Тестирую REST API на Python, пишу сложные SQL-запросы к базе данных.",
-      "expected_requirements": [
-        {
-          "skill_id": "kubernetes",
-          "priority": "nice"
-        },
-        {
-          "skill_id": "rest_api",
-          "priority": "must"
-        },
-        {
-          "skill_id": "sql",
-          "priority": "must"
-        }
-      ],
-      "expected_confirmed": [
-        "python",
-        "rest_api",
-        "sql"
-      ]
+      "id": "G02",
+      "title": "секция условий не является требованием",
+      "taxonomy_version": "1.0.0",
+      "vacancy": "Требования:\nОбязательно: Git, Jira.\nУсловия: удалёнка, ДМС, ноутбук на Linux.\n",
+      "profile": "Работаю с Git и Jira каждый день.\n",
+      "expected_requirements": {"git": "must", "jira": "must"},
+      "expected_confirmed": ["git", "jira"],
+      "expected_coverage": 100
     },
     {
-      "id": "G-003",
-      "vacancy": "Требования:\nНеобходимо работать с GitLab CI и Docker.\nОбязательна Java для бэкенда.",
-      "profile": "Собираю пайплайны в GitLab CI, контейнеризация через Docker.",
-      "expected_requirements": [
-        {
-          "skill_id": "docker",
-          "priority": "must"
-        },
-        {
-          "skill_id": "git",
-          "priority": "must"
-        },
-        {
-          "skill_id": "gitlab_ci",
-          "priority": "must"
-        },
-        {
-          "skill_id": "java",
-          "priority": "must"
-        }
-      ],
-      "expected_confirmed": [
-        "docker",
-        "git",
-        "gitlab_ci"
-      ]
+      "id": "G03",
+      "title": "секция обязанностей не является требованием",
+      "taxonomy_version": "1.0.0",
+      "vacancy": "Обязанности: тестировать API в Postman.\nТребования:\nОбязательно: Git.\n",
+      "profile": "Ежедневно работаю с Git.\n",
+      "expected_requirements": {"git": "must"},
+      "expected_confirmed": ["git"],
+      "expected_coverage": 100
     },
     {
-      "id": "G-004",
-      "vacancy": "Навыки:\nОбязательны Python и Selenium, git — контроль версий.",
-      "profile": "Автоматизирую тесты на Python, работаю с Selenium и git.",
-      "expected_requirements": [
-        {
-          "skill_id": "git",
-          "priority": "must"
-        },
-        {
-          "skill_id": "python",
-          "priority": "must"
-        },
-        {
-          "skill_id": "selenium",
-          "priority": "must"
-        }
-      ],
-      "expected_confirmed": [
-        "git",
-        "python",
-        "selenium"
-      ]
+      "id": "G04",
+      "title": "Java не путается с JavaScript",
+      "taxonomy_version": "1.0.0",
+      "vacancy": "Требования:\nОбязательно: Java, JUnit.\nБудет плюсом: JavaScript.\n",
+      "profile": "Пишу автотесты на Java и JUnit.\n",
+      "expected_requirements": {"java": "must", "junit": "must", "javascript": "nice"},
+      "expected_confirmed": ["java", "junit"],
+      "expected_coverage": 86
     },
     {
-      "id": "G-005",
-      "vacancy": "Требования:\nНеобходимы Linux и Charles Proxy для отладки Android-приложений.",
-      "profile": "Пишу SQL-запросы, тестирую GraphQL API через Postman.",
-      "expected_requirements": [
-        {
-          "skill_id": "android",
-          "priority": "must"
-        },
-        {
-          "skill_id": "charles",
-          "priority": "must"
-        },
-        {
-          "skill_id": "linux",
-          "priority": "must"
-        }
-      ],
-      "expected_confirmed": [
-        "graphql",
-        "postman",
-        "sql"
-      ]
+      "id": "G05",
+      "title": "неоднозначный Go требует контекста",
+      "taxonomy_version": "1.0.0",
+      "vacancy": "Требования:\nОбязательно: язык Go, Docker.\n",
+      "profile": "Пишу сервисы на Golang.\n",
+      "expected_requirements": {"golang": "must", "docker": "must"},
+      "expected_confirmed": ["golang"],
+      "expected_coverage": 50
+    },
+    {
+      "id": "G06",
+      "title": "кириллические гомоглифы нормализуются",
+      "taxonomy_version": "1.0.0",
+      "vacancy": "Требования:\nОбязательно: \u0421++, Git.\n",
+      "profile": "Опыт на C++ и Git.\n",
+      "expected_requirements": {"cpp": "must", "git": "must"},
+      "expected_confirmed": ["cpp", "git"],
+      "expected_coverage": 100
+    },
+    {
+      "id": "G07",
+      "title": "обязательное перебивает желательное",
+      "taxonomy_version": "1.0.0",
+      "vacancy": "Будет плюсом: Redis.\nТребования:\nОбязательно: Redis.\n",
+      "profile": "Настраивал Redis для кэша.\n",
+      "expected_requirements": {"redis": "must"},
+      "expected_confirmed": ["redis"],
+      "expected_coverage": 100
+    },
+    {
+      "id": "G08",
+      "title": "пустые требования дают ноль",
+      "taxonomy_version": "1.0.0",
+      "vacancy": "Мы классная команда, приходите к нам.\n",
+      "profile": "Postman, Git.\n",
+      "expected_requirements": {},
+      "expected_confirmed": ["git", "postman"],
+      "expected_coverage": 0
+    },
+    {
+      "id": "K01",
+      "title": "MySQL должен подразумевать SQL",
+      "taxonomy_version": "1.0.0",
+      "vacancy": "Требования:\nОбязательно: SQL, Postman.\n",
+      "profile": "Проверяю данные в MySQL, API дергаю через Postman.\n",
+      "expected_requirements": {"sql": "must", "postman": "must"},
+      "expected_confirmed": ["mysql", "postman", "sql"],
+      "expected_coverage": 100,
+      "known_gap": true,
+      "note": "Связей между навыками нет. Владение MySQL не подтверждает SQL. Закрывается словарём 1.1.0."
+    },
+    {
+      "id": "K02",
+      "title": "REST API должен матчиться независимо от порядка слов",
+      "taxonomy_version": "1.0.0",
+      "vacancy": "Требования:\nОбязательно: REST API, Git.\n",
+      "profile": "API-тестирование REST через Postman, работаю с Git.\n",
+      "expected_requirements": {"rest_api": "must", "git": "must"},
+      "expected_confirmed": ["git", "postman", "rest_api"],
+      "expected_coverage": 100,
+      "known_gap": true,
+      "note": "Алиас чувствителен к порядку слов. Закрывается словарь 1.1.0."
     }
   ]
 }

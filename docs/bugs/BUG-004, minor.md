@@ -1,1 +1,0 @@
-BUG-004, minor. Файлы UTF-8 с BOM от блокнота ломали первый токен. Фикс: чтение в utf-8-sig. Регрессия: test_cli_handles_bom.

@@ -4,12 +4,14 @@ from __future__ import annotations
 
 from datetime import UTC, datetime
 
-from sqlalchemy import DateTime, Integer, String, Text, select
+from sqlalchemy import DateTime, Integer, String, Text, create_engine, select
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column
 
 from jobfit.logging_config import get_logger
 from jobfit.ports.repository import AnalysisRecord
+
+log = get_logger(__name__)
 
 
 class Base(DeclarativeBase):
@@ -28,15 +30,10 @@ class AnalysisRow(Base):
     payload_json: Mapped[str] = mapped_column(Text)
 
 
-log = get_logger(__name__)
-
-
 def make_engine(url: str) -> Engine:
-    from sqlalchemy import create_engine
-
     engine = create_engine(url)
+    # MVP: бутстрап схемы при создании движка. На этапе 2 заменим Alembic-миграциями.
     Base.metadata.create_all(engine)
-    log.info("database engine ready for %s", url.split("@")[-1])
     return engine
 
 
@@ -69,8 +66,10 @@ class SqlAnalysisRepository:
         )
         with Session(self._engine) as session, session.begin():
             session.add(row)
-        log.info("saved analysis id=%s coverage=%s", row.id, row.coverage)
-        return _to_record(row)
+            session.flush()
+            result = _to_record(row)
+        log.info("saved analysis id=%s coverage=%s", result.id, result.coverage)
+        return result
 
     def get(self, record_id: int) -> AnalysisRecord | None:
         with Session(self._engine) as session:
