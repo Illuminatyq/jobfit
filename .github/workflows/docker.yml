@@ -27,7 +27,7 @@ jobs:
             ghcr.io/illuminatyq/jobfit:${{ github.sha }}
       - name: Smoke test image
         run: |
-          docker run -d --name jobfit-smoke -p 8000:8000 ghcr.io/illuminatyq/jobfit:${{ github.sha }}
+          docker run -d --name jobfit-smoke -p 8000:8000 -e JOBFIT_DATABASE_URL=sqlite:///./demo.db ghcr.io/illuminatyq/jobfit:${{ github.sha }}
           ok=0
           for i in $(seq 1 30); do
             if curl -sf http://localhost:8000/healthz; then ok=1; break; fi

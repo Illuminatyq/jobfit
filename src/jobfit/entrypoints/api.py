@@ -4,9 +4,11 @@ from __future__ import annotations
 
 import json
 from dataclasses import asdict
+from pathlib import Path
 from typing import Annotated
 
 from fastapi import Depends, FastAPI, HTTPException
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 from sqlalchemy.engine import Engine
 
@@ -72,3 +74,9 @@ def api_analyze(
         )
         payload["id"] = record.id
     return payload
+
+
+# Статика монтируется ПОСЛЕ всех роутов: catch-all "/" не должен перекрывать
+# /healthz, /api/analyze и /docs. Каталог static лежит внутри пакета jobfit.
+_STATIC = Path(__file__).resolve().parent.parent / "static"
+app.mount("/", StaticFiles(directory=_STATIC, html=True), name="static")

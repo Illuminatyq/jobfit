@@ -15,7 +15,7 @@ services:
       timeout: 3s
       retries: 10
 
-  api:
+    api:
     build: .
     environment:
       JOBFIT_DATABASE_URL: postgresql+psycopg://jobfit:jobfit@db:5432/jobfit

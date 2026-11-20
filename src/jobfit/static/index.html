@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>JobFit · демо</title>
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; }
+  body { margin:0; font-family: ui-monospace, "JetBrains Mono", Consolas, monospace; background:#04060d; color:#e6edf7; }
+  .wrap { max-width: 960px; margin: 0 auto; padding: 32px 16px 64px; }
+  h1 { font-size: 22px; margin: 0 0 4px; }
+  .sub { color:#8b98ad; font-size:12px; margin-bottom:24px; }
+  .grid { display:grid; gap:16px; grid-template-columns: 1fr 1fr; }
+  @media (max-width:720px){ .grid{grid-template-columns:1fr;} }
+  label { display:block; font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:#8b98ad; margin-bottom:6px; }
+  textarea { width:100%; height:180px; resize:vertical; background:#0b1020; color:#e6edf7; border:1px solid #22304a; border-radius:12px; padding:12px; font:inherit; font-size:12px; }
+  textarea:focus { outline:none; border-color:#22d3ee; }
+  .bar { display:flex; gap:10px; align-items:center; margin:18px 0; flex-wrap:wrap; }
+  button { background:#22d3ee; color:#04060d; border:0; border-radius:12px; padding:0 20px; height:42px; font:inherit; font-weight:700; cursor:pointer; }
+  button:disabled { opacity:.5; cursor:default; }
+  .links a { color:#8b98ad; font-size:11px; text-decoration:none; border:1px solid #22304a; border-radius:8px; padding:6px 10px; margin-right:6px; }
+  .links a:hover { color:#22d3ee; border-color:#22d3ee; }
+  .panel { border:1px solid #22304a; border-radius:16px; background:#0b1020; padding:18px; margin-top:8px; }
+  .cov { font-size:40px; font-weight:800; color:#34d399; }
+  .cols { display:grid; gap:16px; grid-template-columns:1fr 1fr; margin-top:14px; }
+  @media (max-width:720px){ .cols{grid-template-columns:1fr;} }
+  .cols h3 { font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:#8b98ad; margin:0 0 8px; }
+  .tag { display:inline-block; font-size:11px; border-radius:8px; padding:4px 8px; margin:0 6px 6px 0; border:1px solid; }
+  .ok { color:#34d399; border-color:#34d39955; background:#34d39912; }
+  .gap { color:#f87171; border-color:#f8717155; background:#f8717112; }
+  .err { color:#f87171; font-size:12px; }
+  .note { color:#8b98ad; font-size:11px; margin-top:14px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>JobFit · live demo</h1>
+  <div class="sub">Детерминированный анализ соответствия резюме вакансии. Данные демо-инстанса сбрасываются при перезапуске.</div>
+  <div class="grid">
+    <div><label for="v">Вакансия</label><textarea id="v">Требуется QA Engineer. Обязательно: Python, pytest, SQL, REST API, Docker. Желательно: Playwright, Allure, CI/CD.</textarea></div>
+    <div><label for="p">Резюме / профиль</label><textarea id="p">QA Engineer, 4 года. Python, pytest, SQL, Postman, REST API, Docker, GitLab CI. Allure, Playwright — базово.</textarea></div>
+  </div>
+  <div class="bar">
+    <button id="go">Анализировать</button>
+    <span class="links">
+      <a href="https://illuminatyq.github.io/jobfit/" target="_blank" rel="noopener">Allure</a>
+      <a href="https://illuminatyq.github.io/jobfit/eval/latest.md" target="_blank" rel="noopener">Eval</a>
+      <a href="https://github.com/Illuminatyq/jobfit" target="_blank" rel="noopener">Repo</a>
+    </span>
+  </div>
+  <div class="panel" id="out" hidden>
+    <div class="cov" id="cov">—</div>
+    <div class="cols">
+      <div><h3>Подтверждено</h3><div id="ok"></div></div>
+      <div><h3>Пробелы</h3><div id="gap"></div></div>
+    </div>
+    <div class="note" id="meta"></div>
+  </div>
+  <div class="err" id="err"></div>
+</div>
+<script>
+  const $ = (s) => document.querySelector(s);
+  const tags = (el, list, cls) => {
+    el.innerHTML = (list || []).map((t) => `<span class="tag ${cls}">${typeof t === 'string' ? t : t.name || t.skill || JSON.stringify(t)}</span>`).join('') || '<span class="note">пусто</span>';
+  };
+  $('#go').addEventListener('click', async () => {
+    const btn = $('#go'); btn.disabled = true; $('#err').textContent = '';
+    try {
+      const r = await fetch('/api/analyze', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ vacancy: $('#v').value, profile: $('#p').value, save: true }),
+      });
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      const d = await r.json();
+      $('#out').hidden = false;
+      $('#cov').textContent = (d.coverage ?? 0) + '%';
+      tags($('#ok'), d.confirmed || d.confirmed_skills, 'ok');
+      tags($('#gap'), d.critical_gaps || d.gaps, 'gap');
+      $('#meta').textContent = 'taxonomy ' + (d.taxonomy_version || '?') + (d.id ? ' · saved id ' + d.id : '');
+    } catch (e) { $('#err').textContent = 'Ошибка: ' + e.message; }
+    btn.disabled = false;
+  });
+</script>
+</body>
+</html>
