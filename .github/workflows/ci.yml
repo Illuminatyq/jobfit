@@ -70,6 +70,9 @@ jobs:
           cache: pip
       - run: python -m pip install -U pip
       - run: pip install -e ".[dev]"
+      - run: alembic upgrade head
+        env:
+          JOBFIT_DATABASE_URL: postgresql+psycopg://jobfit:jobfit@localhost:5432/jobfit
       - run: pytest -m integration
         env:
           JOBFIT_DATABASE_URL: postgresql+psycopg://jobfit:jobfit@localhost:5432/jobfit

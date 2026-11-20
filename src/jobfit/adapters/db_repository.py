@@ -31,10 +31,12 @@ class AnalysisRow(Base):
 
 
 def make_engine(url: str) -> Engine:
-    engine = create_engine(url)
-    # MVP: бутстрап схемы при создании движка. На этапе 2 заменим Alembic-миграциями.
+    return create_engine(url)
+
+
+def init_schema(engine: Engine) -> None:
+    """Создаёт схему для тестов/dev. В проде схему ведёт Alembic (alembic upgrade head)."""
     Base.metadata.create_all(engine)
-    return engine
 
 
 def _to_record(row: AnalysisRow) -> AnalysisRecord:
