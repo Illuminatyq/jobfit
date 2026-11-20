@@ -1,1 +1,0 @@
-18:10:49 INFO    [jobfit.adapters.db_repository] saved analysis id=1 coverage=100

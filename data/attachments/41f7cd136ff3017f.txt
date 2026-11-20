@@ -1,0 +1,1 @@
+18:23:05 WARNING [jobfit.cli] input file missing: /tmp/pytest-of-runner/pytest-0/test_cli_missing_file0/nope.txt

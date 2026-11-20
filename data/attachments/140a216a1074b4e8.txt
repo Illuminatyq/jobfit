@@ -1,3 +1,0 @@
-18:10:48 INFO    [jobfit.app.analyze] analyze start: vacancy=134 chars, profile=94 chars, taxonomy=1.0.0
-18:10:48 INFO    [jobfit.app.analyze] analyze done: coverage=55%, requirements=5, confirmed=2, gaps=3, critical=1
-18:10:48 INFO    [jobfit.entrypoints.api] api /analyze coverage=55% save=False
