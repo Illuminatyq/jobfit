@@ -1,1 +1,0 @@
-INFO     jobfit.adapters.db_repository:db_repository.py:71 saved analysis id=1 coverage=100
