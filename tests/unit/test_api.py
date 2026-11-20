@@ -3,14 +3,16 @@ import json
 import pytest
 from fastapi.testclient import TestClient
 
-from jobfit.adapters.db_repository import SqlAnalysisRepository, make_engine
+from jobfit.adapters.db_repository import SqlAnalysisRepository, init_schema, make_engine
 from jobfit.entrypoints.api import app
 from jobfit.ports.repository import AnalysisRecord
 
 
 @pytest.fixture()
 def engine(tmp_path):  # type: ignore[no-untyped-def]
-    return make_engine(f"sqlite:///{tmp_path / 'test.db'}")
+    eng = make_engine(f"sqlite:///{tmp_path / 'test.db'}")
+    init_schema(eng)
+    return eng
 
 
 @pytest.mark.unit
