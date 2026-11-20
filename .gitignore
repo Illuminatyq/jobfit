@@ -21,3 +21,5 @@ venv/
 .hypothesis/
 *.tmp
 reports/
+
+allure-report/

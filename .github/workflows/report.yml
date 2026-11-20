@@ -1,0 +1,65 @@
+name: Reports
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: reports-pages
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - run: python -m pip install -U pip
+      - run: pip install -e ".[dev]"
+
+      - name: Unit tests with Allure results
+        run: pytest -m "not integration and not e2e" --alluredir=allure-results --clean-alluredir
+
+      - name: Eval report
+        run: python -m jobfit.entrypoints.eval_cli
+
+      - name: Previous report (for history trend)
+        uses: actions/checkout@v4
+        continue-on-error: true
+        with:
+          ref: gh-pages
+          path: previous-report
+
+      - name: Restore history
+        run: |
+          if [ -d previous-report/history ]; then
+            cp -r previous-report/history allure-results/history
+          fi
+
+      - name: Install Allure CLI
+        run: npm install -g allure-commandline@2
+
+      - name: Generate report
+        run: allure generate allure-results --clean -o public
+
+      - name: Attach eval report
+        run: |
+          mkdir -p public/eval
+          cp reports/eval/latest.md public/eval/latest.md
+          cp reports/eval/latest.json public/eval/latest.json
+
+      - name: Deploy to gh-pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_branch: gh-pages
+          publish_dir: public
