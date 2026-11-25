@@ -25,6 +25,12 @@ dev = [
     "allure-pytest>=2.13",
 ]
 
+ui = [
+    "pytest-playwright>=0.5",
+    "playwright>=1.45",
+    "pillow>=10",
+]
+
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
@@ -60,6 +66,8 @@ markers = [
   "slow: long-running",
   "quarantine: known flaky, excluded from gates",
   "req(id): traceability link to docs/requirements.md",
+    "ui_landing: UI-тесты лендинга-портфолио",
+  "smoke: смоук-подмножество для firefox/webkit",
 ]
 
 [tool.coverage.run]
