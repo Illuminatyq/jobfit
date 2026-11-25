@@ -1,0 +1,187 @@
+name: pipeline
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  schedule:
+    - cron: "0 6 */3 * *"   # раз в 3 дня, ~09:00 МСК: полный регресс против прода
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pipeline-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - run: python -m pip install -U pip
+      - run: pip install -e ".[dev]"
+      - run: ruff check .
+      - run: ruff format --check .
+      - run: mypy
+
+  unit:
+    needs: quality
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - run: python -m pip install -U pip
+      - run: pip install -e ".[dev]"
+      - name: Unit + coverage + allure
+        run: >-
+          pytest --cov --cov-report=xml --cov-report=term-missing
+          --junitxml=junit.xml -m "not integration and not e2e and not ui_landing"
+          --alluredir=allure-results
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-reports
+          path: |
+            coverage.xml
+            junit.xml
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: allure-unit
+          path: allure-results
+
+  integration:
+    needs: quality
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: jobfit
+          POSTGRES_PASSWORD: jobfit
+          POSTGRES_DB: jobfit
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U jobfit"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+    env:
+      JOBFIT_DATABASE_URL: postgresql+psycopg://jobfit:jobfit@localhost:5432/jobfit
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - run: python -m pip install -U pip
+      - run: pip install -e ".[dev]"
+      - run: alembic upgrade head
+      - run: pytest -m integration --alluredir=allure-results
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: allure-integration
+          path: allure-results
+
+  ui:
+    needs: quality
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [chromium, firefox, webkit]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - run: python -m pip install -U pip
+      - run: pip install -e ".[dev,ui]"
+      - run: playwright install --with-deps ${{ matrix.browser }}
+      - name: UI landing (chromium полный набор, остальные smoke)
+        run: |
+          if [ "${{ matrix.browser }}" = "chromium" ]; then
+            MARKERS="ui_landing"
+          else
+            MARKERS="ui_landing and smoke"
+          fi
+          pytest tests/ui_landing -m "$MARKERS" --browser ${{ matrix.browser }} \
+            --alluredir=allure-results --tracing=retain-on-failure --output=test-results
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: allure-ui-${{ matrix.browser }}
+          path: allure-results
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: traces-${{ matrix.browser }}
+          path: test-results
+
+  report:
+    needs: [unit, integration, ui]
+    if: always() && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - run: python -m pip install -U pip
+      - run: pip install -e ".[dev]"
+      - name: Eval report
+        run: python -m jobfit.entrypoints.eval_cli
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: allure-*
+          path: allure-results
+          merge-multiple: true
+      - name: Previous report (for history trend)
+        uses: actions/checkout@v4
+        continue-on-error: true
+        with:
+          ref: gh-pages
+          path: previous-report
+      - name: Restore history
+        run: |
+          if [ -d previous-report/history ]; then
+            cp -r previous-report/history allure-results/history
+          fi
+      - name: Executor and environment
+        run: |
+          cat > allure-results/executor.json <<EOF
+          {"name":"GitHub Actions","type":"github","buildName":"pipeline #${{ github.run_number }}","buildUrl":"${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}","reportName":"JobFit + Landing UI"}
+          EOF
+          cat > allure-results/environment.properties <<EOF
+          Commit=${{ github.sha }}
+          Ref=${{ github.ref }}
+          Trigger=${{ github.event_name }}
+          Browsers=chromium, firefox, webkit
+          EOF
+      - run: npm install -g allure-commandline@2
+      - run: allure generate allure-results --clean -o public
+      - name: Attach eval report
+        run: |
+          mkdir -p public/eval
+          cp reports/eval/latest.md public/eval/latest.md
+          cp reports/eval/latest.json public/eval/latest.json
+      - name: Deploy to gh-pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_branch: gh-pages
+          publish_dir: public
