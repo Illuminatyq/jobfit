@@ -1,4 +1,5 @@
 """Page Object лендинга. Селекторы — на семантических классах и ролях."""
+
 from __future__ import annotations
 
 from playwright.sync_api import Locator, Page, expect
@@ -34,12 +35,16 @@ class LandingPage:
 
     @property
     def theme_toggle(self) -> Locator:
-        return self.page.get_by_test_id("theme-toggle").or_(
-            self.page.locator(
-                "button[aria-label*='theme' i], button[aria-label*='тем' i],"
-                " button[title*='theme' i], button[title*='тем' i]"
+        return (
+            self.page.get_by_test_id("theme-toggle")
+            .or_(
+                self.page.locator(
+                    "button[aria-label*='theme' i], button[aria-label*='тем' i],"
+                    " button[title*='theme' i], button[title*='тем' i]"
+                )
             )
-        ).first
+            .first
+        )
 
     @property
     def nav_links(self) -> Locator:
@@ -73,6 +78,4 @@ class LandingPage:
         expect(self.skill_cards.last).to_have_css("opacity", "1")
 
     def groups(self) -> list[str]:
-        return self.skill_cards.evaluate_all(
-            "els => [...new Set(els.map(e => e.dataset.group))]"
-        )
+        return self.skill_cards.evaluate_all("els => [...new Set(els.map(e => e.dataset.group))]")

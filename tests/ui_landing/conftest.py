@@ -1,4 +1,5 @@
 """Фикстуры UI-тестов лендинга. Чёрный ящик против LANDING_URL (прод или превью)."""
+
 from __future__ import annotations
 
 import os

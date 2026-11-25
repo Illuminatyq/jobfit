@@ -1,5 +1,6 @@
 """Пиксельный контраст по WCAG 2.x. Меряем отрендеренный цвет, а не computed-фон:
 у .seg.on фон — градиент, backgroundColor вернул бы transparent."""
+
 from __future__ import annotations
 
 import io
