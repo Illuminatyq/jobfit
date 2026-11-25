@@ -129,7 +129,7 @@ jobs:
           name: traces-${{ matrix.browser }}
           path: test-results
 
-   report:
+    report:
     needs: [unit, integration, ui]
     if: always() && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
