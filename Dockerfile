@@ -1,4 +1,4 @@
-FROM python:3.12-slim AS base
+FROM python:3.11-slim AS base
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
@@ -6,9 +6,10 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 
 WORKDIR /app
 
-COPY pyproject.toml README.md* ./
+COPY pyproject.toml README.md* alembic.ini ./
+COPY migrations ./migrations
 COPY src ./src
-RUN pip install --upgrade pip && pip install -e .
+RUN pip install --upgrade pip && pip install .
 
 EXPOSE 8000
 
