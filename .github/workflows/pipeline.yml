@@ -5,7 +5,7 @@ on:
   push:
     branches: [main]
   schedule:
-    - cron: "0 6 */3 * *"   # раз в 3 дня, ~09:00 МСК: полный регресс против прода
+    - cron: "0 6 */3 * *"
   workflow_dispatch:
 
 permissions:
@@ -45,7 +45,7 @@ jobs:
         run: >-
           pytest --cov --cov-report=xml --cov-report=term-missing
           --junitxml=junit.xml -m "not integration and not e2e and not ui_landing"
-          --alluredir=allure-results
+          --ignore=tests/ui_landing --alluredir=allure-results
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -86,7 +86,7 @@ jobs:
       - run: python -m pip install -U pip
       - run: pip install -e ".[dev]"
       - run: alembic upgrade head
-      - run: pytest -m integration --alluredir=allure-results
+      - run: pytest -m integration --ignore=tests/ui_landing --alluredir=allure-results
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -109,7 +109,7 @@ jobs:
       - run: python -m pip install -U pip
       - run: pip install -e ".[dev,ui]"
       - run: playwright install --with-deps ${{ matrix.browser }}
-      - name: UI landing (chromium полный набор, остальные smoke)
+      - name: UI landing
         run: |
           if [ "${{ matrix.browser }}" = "chromium" ]; then
             MARKERS="ui_landing"
@@ -129,7 +129,7 @@ jobs:
           name: traces-${{ matrix.browser }}
           path: test-results
 
-    report:
+  report:
     needs: [unit, integration, ui]
     if: always() && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
@@ -152,7 +152,7 @@ jobs:
           merge-multiple: true
       - name: Ensure results dir
         run: mkdir -p allure-results
-      - name: Guard - есть ли результаты
+      - name: Guard
         id: guard
         run: |
           count=$(find allure-results -name '*-result.json' | wc -l)
@@ -161,7 +161,7 @@ jobs:
       - name: Eval report
         if: steps.guard.outputs.count != '0'
         run: python -m jobfit.entrypoints.eval_cli
-      - name: Previous report (for history trend)
+      - name: Previous report
         if: steps.guard.outputs.count != '0'
         uses: actions/checkout@v4
         continue-on-error: true
