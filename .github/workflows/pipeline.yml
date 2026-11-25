@@ -135,6 +135,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      actions: read
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -152,12 +153,16 @@ jobs:
           merge-multiple: true
       - name: Ensure results dir
         run: mkdir -p allure-results
-      - name: Guard
+            - name: Guard
         id: guard
         run: |
           count=$(find allure-results -name '*-result.json' | wc -l)
           echo "count=$count" >> "$GITHUB_OUTPUT"
           echo "Allure results: $count"
+          if [ "$count" -eq 0 ]; then
+            echo "::error::Нет allure-результатов: скачивание артефактов не сработало, публикация невозможна"
+            exit 1
+          fi
       - name: Eval report
         if: steps.guard.outputs.count != '0'
         run: python -m jobfit.entrypoints.eval_cli
