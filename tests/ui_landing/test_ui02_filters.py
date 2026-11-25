@@ -22,9 +22,7 @@ def test_ui02_skill_filters(page: Page, landing_url: str) -> None:
         page.wait_for_timeout(350)  # анимация скрытия/показа
         visible = lp.visible_cards
         assert 0 < visible.count() < total
-        groups = visible.evaluate_all(
-            "els => [...new Set(els.map(e => e.dataset.group))]"
-        )
+        groups = visible.evaluate_all("els => [...new Set(els.map(e => e.dataset.group))]")
         assert len(groups) == 1, f"Фильтр смешал группы: {groups}"
     buttons.nth(0).click()
     page.wait_for_timeout(350)

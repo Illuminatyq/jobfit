@@ -1,5 +1,6 @@
 """UI-04: заполненность прогресс-баров навыков читается в обеих темах.
 Гейт: WCAG non-text contrast >= 3.0 (WCAG 1.4.11) как продуктовое требование."""
+
 from __future__ import annotations
 
 import allure
@@ -37,17 +38,12 @@ def test_ui04_skill_bar_contrast(page: Page, landing_url: str, theme: str) -> No
     with allure.step("По каждой группе: худший контраст заполнения vs трек"):
         for group in lp.groups():
             seg_on = lp.segs_on(group).first
-            ratios = [
-                contrast_ratio(element_color(seg_on, x), empty_rgb)
-                for x in GRADIENT_PROBES
-            ]
+            ratios = [contrast_ratio(element_color(seg_on, x), empty_rgb) for x in GRADIENT_PROBES]
             rows.append((group, min(ratios)))
 
     table = "\n".join(f"{g}: {r:.2f}" for g, r in rows)
     allure.attach(table, "contrast-by-group", allure.attachment_type.TEXT)
-    allure.attach(
-        lp.skills_section.screenshot(), "skills-section", allure.attachment_type.PNG
-    )
+    allure.attach(lp.skills_section.screenshot(), "skills-section", allure.attachment_type.PNG)
 
     worst = min(r for _, r in rows)
     assert worst >= MIN_RATIO, f"Контраст заполнения ниже {MIN_RATIO}:1\n{table}"

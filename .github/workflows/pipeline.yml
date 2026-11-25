@@ -129,7 +129,7 @@ jobs:
           name: traces-${{ matrix.browser }}
           path: test-results
 
-  report:
+   report:
     needs: [unit, integration, ui]
     if: always() && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
@@ -143,25 +143,39 @@ jobs:
           cache: pip
       - run: python -m pip install -U pip
       - run: pip install -e ".[dev]"
-      - name: Eval report
-        run: python -m jobfit.entrypoints.eval_cli
-      - uses: actions/download-artifact@v4
+      - name: Download allure results
+        uses: actions/download-artifact@v4
+        continue-on-error: true
         with:
           pattern: allure-*
           path: allure-results
           merge-multiple: true
+      - name: Ensure results dir
+        run: mkdir -p allure-results
+      - name: Guard - есть ли результаты
+        id: guard
+        run: |
+          count=$(find allure-results -name '*-result.json' | wc -l)
+          echo "count=$count" >> "$GITHUB_OUTPUT"
+          echo "Allure results: $count"
+      - name: Eval report
+        if: steps.guard.outputs.count != '0'
+        run: python -m jobfit.entrypoints.eval_cli
       - name: Previous report (for history trend)
+        if: steps.guard.outputs.count != '0'
         uses: actions/checkout@v4
         continue-on-error: true
         with:
           ref: gh-pages
           path: previous-report
       - name: Restore history
+        if: steps.guard.outputs.count != '0'
         run: |
           if [ -d previous-report/history ]; then
             cp -r previous-report/history allure-results/history
           fi
       - name: Executor and environment
+        if: steps.guard.outputs.count != '0'
         run: |
           cat > allure-results/executor.json <<EOF
           {"name":"GitHub Actions","type":"github","buildName":"pipeline #${{ github.run_number }}","buildUrl":"${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}","reportName":"JobFit + Landing UI"}
@@ -172,14 +186,20 @@ jobs:
           Trigger=${{ github.event_name }}
           Browsers=chromium, firefox, webkit
           EOF
-      - run: npm install -g allure-commandline@2
-      - run: allure generate allure-results --clean -o public
+      - name: Install Allure CLI
+        if: steps.guard.outputs.count != '0'
+        run: npm install -g allure-commandline@2
+      - name: Generate report
+        if: steps.guard.outputs.count != '0'
+        run: allure generate allure-results --clean -o public
       - name: Attach eval report
+        if: steps.guard.outputs.count != '0'
         run: |
           mkdir -p public/eval
           cp reports/eval/latest.md public/eval/latest.md
           cp reports/eval/latest.json public/eval/latest.json
       - name: Deploy to gh-pages
+        if: steps.guard.outputs.count != '0'
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}

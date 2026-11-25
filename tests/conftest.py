@@ -29,6 +29,7 @@ def vacancy_text() -> str:
 def profile_text() -> str:
     return PROFILE
 
+
 @pytest.fixture(autouse=True)
 def _allure_parent_suite(request: pytest.FixtureRequest) -> None:
     if request.node.get_closest_marker("integration"):
