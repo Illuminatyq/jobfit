@@ -1,0 +1,73 @@
+import json
+
+import allure
+import pytest
+
+from .contrast import open_png, sample_point, sample_strip, worst_ratio
+
+THRESHOLD = 3.0
+
+
+@pytest.mark.ui_landing
+def test_ui02_skill_filters(page, base_url):
+    allure.dynamic.title("UI-02 Фильтры навыков: категория сужает набор, «Все» возвращает")
+    page.goto(base_url, wait_until="domcontentloaded")
+    cards = page.locator(".skill-item")
+    cards.first.wait_for(state="visible")
+    total = cards.count()
+
+    page.get_by_role("button", name="Backend и данные").click()
+    page.wait_for_function(
+        "(t) => [...document.querySelectorAll('.skill-item')]"
+        ".filter(e => e.offsetParent !== null).length < t",
+        arg=total,
+    )
+    groups = cards.evaluate_all(
+        "els => els.filter(e => e.offsetParent !== null).map(e => e.dataset.group)"
+    )
+    assert 0 < len(groups) < total
+    assert len(set(groups)) == 1, f"После фильтра видны разные группы: {set(groups)}"
+
+    page.get_by_role("button", name="Все", exact=True).click()
+    page.wait_for_function(
+        "(t) => [...document.querySelectorAll('.skill-item')]"
+        ".filter(e => e.offsetParent !== null).length === t",
+        arg=total,
+    )
+
+
+@pytest.mark.ui_landing
+@pytest.mark.smoke
+@pytest.mark.parametrize("theme", ["light", "dark"])
+def test_ui04_contrast_skill_bars(page, base_url, set_theme, theme):
+    allure.dynamic.title(f"UI-04 Контраст сегментов навыков не ниже 3:1 ({theme})")
+    set_theme(theme)
+    cards = page.locator(".skill-item")
+    cards.first.wait_for(state="visible")
+    groups = cards.evaluate_all("els => [...new Set(els.map(e => e.dataset.group))]")
+
+    rows, failures = [], []
+    for group in groups:
+        card = page.locator(f".skill-item[data-group='{group}']").first
+        card.scroll_into_view_if_needed()
+        on = card.locator(".seg.on")
+        off = card.locator(".seg:not(.on)")
+        if off.count() == 0:
+            off = page.locator(f".skill-item[data-group='{group}'] .seg:not(.on)")
+
+        fill_samples = sample_strip(open_png(on.first.screenshot()))
+        if off.count() > 0:
+            empty = sample_strip(open_png(off.first.screenshot()))[2]
+            mode = "fill-vs-empty"
+        else:
+            # В группе все карточки 5/5: пустых нет. Фон карточки — зазор между сегментами.
+            b1, b2 = on.nth(0).bounding_box(), on.nth(1).bounding_box()
+            cb = card.bounding_box()
+            gx = int((b1["x"] + b1["width"] + b2["x"]) / 2 - cb["x"])
+            gy = int(b1["y"] + b1["height"] / 2 - cb["y"])
+            empty = sample_point(open_png(card.screenshot()), gx, gy)
+            mode = "fill-vs-card"
+
+        computed = on.first.evaluate(
+            "e => { const s = getComputedStyle(e);"
+            "return {backgroundColor
