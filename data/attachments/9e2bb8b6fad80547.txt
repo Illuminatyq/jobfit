@@ -1,1 +1,0 @@
-18:48:03 WARNING [jobfit.cli] input file is not valid UTF-8: /tmp/pytest-of-runner/pytest-0/test_cli_non_utf8_file0/v.txt
