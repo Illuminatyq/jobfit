@@ -1,5 +1,5 @@
-import pytest
 import allure
+import pytest
 
 from jobfit.adapters.taxonomy_file import load_default_taxonomy
 from jobfit.domain.taxonomy import Taxonomy
