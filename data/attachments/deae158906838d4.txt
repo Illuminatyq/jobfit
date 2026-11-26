@@ -1,0 +1,3 @@
+.aurora: none 0s
+.spotlight: none 0s
+.grain: none 0s

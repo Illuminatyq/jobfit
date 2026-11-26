@@ -1,1 +1,1 @@
-{"name":"JobFit + Landing UI","stats":{"failed":0,"broken":0,"skipped":0,"passed":186,"unknown":0,"total":186},"status":"passed","duration":95541,"createdAt":1795631106945,"plugin":"Allure2","meta":{"reportId":"59a32b81-20dc-46f6-8894-e2251663f0ae","singleFile":false}}
+{"name":"JobFit + Landing UI","stats":{"failed":1,"broken":0,"skipped":0,"passed":27,"unknown":0,"total":28},"status":"failed","duration":136306,"createdAt":1795696676530,"plugin":"Allure2","meta":{"reportId":"3dedb72a-dae0-4af9-bdad-ef9dec07e292","singleFile":false}}

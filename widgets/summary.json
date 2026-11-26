@@ -1,1 +1,1 @@
-{"reportName":"JobFit + Landing UI","testRuns":[],"statistic":{"failed":0,"broken":0,"skipped":0,"passed":186,"unknown":0,"total":186},"time":{"start":1795631011404,"stop":1795631106945,"duration":95541,"minDuration":0,"maxDuration":24216,"sumDuration":128140}}
+{"reportName":"JobFit + Landing UI","testRuns":[],"statistic":{"failed":1,"broken":0,"skipped":0,"passed":27,"unknown":0,"total":28},"time":{"start":1795696540224,"stop":1795696676530,"duration":136306,"minDuration":178,"maxDuration":47609,"sumDuration":271438}}

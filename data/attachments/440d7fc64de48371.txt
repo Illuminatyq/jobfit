@@ -1,5 +1,0 @@
-manual: 3.54
-backend: 6.68
-mobile: 6.48
-auto: 3.27
-devops: 6.85
