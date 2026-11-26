@@ -2,6 +2,7 @@ import allure
 import pytest
 from playwright.sync_api import Page, expect
 
+from .attachments import attach_metrics, attach_offenders, attach_png
 from .landing_page import LandingPage
 
 
@@ -16,11 +17,22 @@ from .landing_page import LandingPage
 )
 def test_ui06_no_horizontal_scroll(page: Page, landing_url: str, width: int, height: int) -> None:
     allure.dynamic.title(f"UI-06: нет горизонтального скролла на {width}x{height}")
-    page.set_viewport_size({"width": width, "height": height})
-    lp = LandingPage(page, landing_url)
-    lp.open()
-    overflow = page.evaluate(
-        "document.documentElement.scrollWidth - document.documentElement.clientWidth"
+    allure.dynamic.description(
+        "Горизонтальный скролл на лендинге ломает мобильный опыт и печать в PDF. "
+        "Проверяем, что ни один элемент не вылезает за clientWidth, и фиксируем виновников."
     )
-    assert overflow <= 0, f"Горизонтальный overflow {overflow}px"
-    expect(page.locator("h1").first).to_be_visible()
+    page.set_viewport_size({"width": width, "height": height})
+    allure.dynamic.parameter("viewport", f"{width}x{height}")
+    lp = LandingPage(page, landing_url)
+    with allure.step("Открываю лендинг"):
+        lp.open()
+    with allure.step("Снимаю метрики ширины"):
+        metrics = attach_metrics(page)
+    with allure.step("Ищу элементы за границей viewport"):
+        offenders = attach_offenders(page)
+    with allure.step("Прикладываю full-page скриншот"):
+        attach_png(page, f"fullpage-{width}x{height}", full_page=True)
+    with allure.step("Проверяю отсутствие overflow и видимость hero"):
+        overflow = metrics["sw"] - metrics["cw"]
+        assert overflow <= 0, f"overflow {overflow}px, виновники: {offenders}"
+        expect(page.locator("h1").first).to_be_visible()

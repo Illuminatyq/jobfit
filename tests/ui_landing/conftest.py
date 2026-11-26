@@ -1,8 +1,9 @@
-"""Фикстуры UI-тестов лендинга. Чёрный ящик против LANDING_URL (прод или превью)."""
+"""Фикстуры UI-тестов лендинга: контекст, тема, консоль, параметры Allure."""
 
 from __future__ import annotations
 
 import os
+from collections.abc import Iterator
 
 import allure
 import pytest
@@ -16,7 +17,6 @@ def landing_url() -> str:
 
 @pytest.fixture(scope="session")
 def base_url(landing_url: str) -> str:
-    # Для плагина pytest-playwright и твоего test_smoke.py (UI-01).
     return landing_url
 
 
@@ -38,14 +38,25 @@ def page(page: Page) -> Page:
 
 @pytest.fixture(params=["light", "dark"], ids=["light", "dark"])
 def theme(request: pytest.FixtureRequest) -> str:
+    allure.dynamic.parameter("theme", request.param)
     return request.param
 
 
 @pytest.fixture(autouse=True)
-def _allure_ui_group(browser_name: str) -> None:
-    # Корневой conftest ставит unit/integration, группу ui-landing ставим здесь.
+def _console_capture(page: Page) -> Iterator[list[str]]:
+    logs: list[str] = []
+    page.on("console", lambda m: logs.append(f"{m.type}: {m.text}"))
+    page.on("pageerror", lambda e: logs.append(f"pageerror: {e}"))
+    yield logs
+
+
+@pytest.fixture(autouse=True)
+def _allure_context(page: Page, browser_name: str) -> None:
     allure.dynamic.parent_suite("ui-landing")
     allure.dynamic.suite(browser_name)
+    allure.dynamic.parameter("browser", browser_name)
+    vp = page.viewport_size or {}
+    allure.dynamic.parameter("viewport", f"{vp.get('width')}x{vp.get('height')}")
 
 
 @pytest.hookimpl(hookwrapper=True)
@@ -53,14 +64,23 @@ def pytest_runtest_makereport(item: pytest.Item, call: pytest.CallInfo):
     outcome = yield
     rep = outcome.get_result()
     if rep.when == "call" and rep.failed:
-        pg: Page | None = item.funcargs.get("page")
-        if pg is not None:
-            try:
+        page: Page | None = item.funcargs.get("page")
+        if page is None:
+            return
+        try:
+            allure.attach(
+                page.screenshot(full_page=True),
+                "screenshot-on-fail",
+                allure.attachment_type.PNG,
+            )
+            allure.attach(page.url, "page-url", allure.attachment_type.TEXT)
+            logs: list[str] = item.funcargs.get("_console_capture") or []
+            if logs:
                 allure.attach(
-                    pg.screenshot(full_page=True),
-                    "screenshot-on-fail",
-                    allure.attachment_type.PNG,
+                    "\n".join(logs[-50:]),
+                    "console-last-50",
+                    allure.attachment_type.TEXT,
                 )
-                allure.attach(pg.url, "page-url", allure.attachment_type.TEXT)
-            except Exception:
-                pass  # страница могла быть закрыта — не валим отчёт
+            allure.attach(page.content(), "dom-on-fail", allure.attachment_type.HTML)
+        except Exception:
+            pass

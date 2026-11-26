@@ -1,4 +1,4 @@
-"""Page Object лендинга. Селекторы — на семантических классах и ролях."""
+"""Page Object лендинга: локаторы, действия, метрики для доказательств."""
 
 from __future__ import annotations
 
@@ -9,6 +9,7 @@ class LandingPage:
     def __init__(self, page: Page, url: str) -> None:
         self.page = page
         self.url = url
+        self.status: int | None = None
 
     @property
     def skill_cards(self) -> Locator:
@@ -51,7 +52,8 @@ class LandingPage:
         return self.page.locator("header a[href^='#'], nav a[href^='#']")
 
     def open(self) -> None:
-        self.page.goto(self.url, wait_until="domcontentloaded")
+        resp = self.page.goto(self.url, wait_until="domcontentloaded")
+        self.status = resp.status if resp is not None else None
         expect(self.page.locator("h1").first).to_be_visible()
 
     def current_theme(self) -> str:
@@ -59,8 +61,6 @@ class LandingPage:
         return "dark" if dark else "light"
 
     def set_theme(self, theme: str) -> None:
-        # Предусловие рендер-теста: класс темы напрямую, без клика.
-        # Механику кнопки и persistence проверяет UI-03.
         self.page.evaluate(
             "t => document.documentElement.classList.toggle('dark', t === 'dark')",
             theme,
@@ -79,3 +79,15 @@ class LandingPage:
 
     def groups(self) -> list[str]:
         return self.skill_cards.evaluate_all("els => [...new Set(els.map(e => e.dataset.group))]")
+
+    def visible_section_ids(self) -> list[str]:
+        return self.page.evaluate(
+            "() => [...document.querySelectorAll('section[id]')]"
+            ".filter((s) => s.getClientRects().length).map((s) => s.id)"
+        )
+
+    def dom_ready_ms(self) -> int:
+        return self.page.evaluate(
+            "() => Math.round(performance.getEntriesByType('navigation')[0]"
+            "?.domContentLoadedEventEnd || -1)"
+        )
